@@ -34,6 +34,19 @@ else()
 	add_dependencies(create_bumper_plugin ${catkin_EXPORTED_TARGETS})
 	target_link_libraries(create_bumper_plugin
 				${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+	add_library(create_virtual_wall_plugin src/create_virtual_wall_plugin.cpp)
+	add_dependencies(create_virtual_wall_plugin ${catkin_EXPORTED_TARGETS})
+	target_link_libraries(create_virtual_wall_plugin
+				${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+	
+	add_library(virtual_wall_detector src/virtual_wall_detector.cpp)
+	add_dependencies(virtual_wall_detector ${catkin_EXPORTED_TARGETS})
+	target_link_libraries(virtual_wall_detector
+				${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})	
+
+  add_library(model_pose_publisher_plugin src/model_pose_publisher_plugin.cpp)
+  target_link_libraries(model_pose_publisher_plugin
+        ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
   add_library(model_pose_publisher_plugin src/model_pose_publisher_plugin.cpp)
   target_link_libraries(model_pose_publisher_plugin
