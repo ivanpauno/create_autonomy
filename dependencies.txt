@@ -1,3 +1,4 @@
+libglew-dev
 python-catkin-lint
 
 ros-*-amcl
