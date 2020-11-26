@@ -1,27 +1,40 @@
 <launch>
-  <arg name="robot_id"  default="$(optenv ID 1)"      doc="Unique identifier of the robot [1-Inf.)"/>
-  <arg name="ns"        value="create$(arg robot_id)" doc="Namespace of the robot. By default: create1"/>
-  <arg name="tf_prefix" value="$(arg ns)_tf"          doc="Tf prefix"/>
-
+  <arg name="ns" default="create1" doc="Namespace of the robot. By default: create1"/>
   <arg name="laser" default="$(optenv LASER rplidar)" doc="Laser for mapping the environment"/>
 
   <!-- https://github.com/yubaoliu/semantic_slam_floatlazer/blob/master/semantic_slam/launch/semantic_mapping.launch -->
 
-  <param name="semantic_pcl/depth_image_topic" value="$(arg laser)/depth_registered/image_raw"/>
-  <param name="semantic_pcl/color_image_topic" value="$(arg laser)/rgb/image_rect_color"/>
-
-  <param name="semantic_pcl/frame_id" value="$(arg tf_prefix)/$(arg laser)_rgb_optical_frame"/>
-  <param name="semantic_pcl/model_path" value="$(find floatlazer_semantic_cloud)/dataset/model/pspnet_50_ade20k.pth"/>
-
-  <rosparam file="$(find floatlazer_semantic_slam)/params/semantic_cloud.yaml" command="load"/>
-  <node pkg="floatlazer_semantic_cloud" type="semantic_cloud.py" name="semantic_cloud" output="screen"/>
-
+<!--
+  <node pkg="semantic_cloud" type="semantic_cloud.py" name="semantic_cloud" output="screen">
+    <param name="camera/fx" type="double" value="544.771755"/>
+    <param name="camera/fy" type="double" value="546.966312"/>
+    <param name="camera/cx" type="double" value="322.376103"/>
+    <param name="camera/cy" type="double" value="245.357925"/>
+    <param name="camera/width" type="double" value="640"/>
+    <param name="camera/height" type="double" value="480"/>
+    <param name="semantic_pcl/point_type" type="int" value="1"/>
+    <param name="semantic_pcl/depth_image_topic" value="$(arg laser)/depth_registered/image_raw"/>
+    <param name="semantic_pcl/color_image_topic" value="$(arg laser)/rgb/image_rect_color"/>
+    <param name="semantic_pcl/frame_id" value="$(arg ns)/$(arg laser)_color_optical_frame"/>
+    <param name="semantic_pcl/dataset" type="string" value="ade20k"/>
+    <param name="semantic_pcl/model_path" type="string"
+         value="$(find semantic_cloud)/models/pspnet_50_ade20k.pth"/>
+  </node>
+-->
   <!-- Octomap -->
+  <!--
   <rosparam file="$(find floatlazer_semantic_slam)/params/octomap_generator.yaml" command="load"/>
   <node pkg="floatlazer_octomap_generator" type="octomap_generator" name="octomap_generator" output="screen"/>
 
-  <include file="$(find ca_move_base)/launch/octomap_mapping.launch"/>
+  <include file="$(find ca_move_base)/launch/octomap_mapping.launch">
+    <arg name="ns"    value="$(arg ns)"/>
+    <arg name="laser" value="$(arg laser)"/>
+  </include>
+  -->
 
   <!-- ORB_SLAM2 RGBD -->
-  <!-- <include file="$(find ca_semantic_slam)/launch/orb_slam2.launch"/> -->
+  <include file="$(find ca_semantic_slam)/launch/orb_slam2.launch">
+    <arg name="ns"    value="$(arg ns)"/>
+    <arg name="laser" value="$(arg laser)"/>
+  </include>
 </launch>
