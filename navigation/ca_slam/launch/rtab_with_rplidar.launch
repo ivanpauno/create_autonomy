@@ -42,8 +42,6 @@
     <rosparam file="$(find ca_slam)/config/rtabmap.yaml"/>
     <param name="frame_id" type="string" value="$(arg ns)/base_footprint"/>
     <param name="wait_for_transform_duration" type="double" value="$(arg wait_for_transform)"/>
-    <param name="subscribe_scan"              type="bool"   value="true"/>
-    <param name="subscribe_rgbd"              type="bool"   value="true"/>
 
     <remap from="move_base" to="move_base"/>
 
@@ -52,7 +50,7 @@
     <remap from="odom"            to="odom_combined"/>
     <remap from="rgb/camera_info" to="$(arg camera_info_topic)"/>
     <remap from="rgb/image"       to="$(arg rgb_topic)"/>
-    <remap from="scan"            to="rplidar/scan"/>
+    <remap from="scan"            to="$(arg laser)/scan"/>
     <remap from="rgbd_image"      to="$(arg rgbd_topic)"/>
 
     <!-- Fix odom covariance as in simulation the covariance in /odom topic is high (0.1 for linear and 0.05 for angular) -->
@@ -72,15 +70,15 @@
   <!-- visualization with rtabmapviz -->
   <node if="$(arg rtabmapviz)" pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
     <param name="subscribe_depth"             type="bool"   value="false"/>
-    <param name="subscribe_rgbd"              type="bool"   value="false"/>
-    <param name="subscribe_scan"              type="bool"   value="true"/>
+    <param name="subscribe_rgbd"              type="bool"   value="true"/>
+    <param name="subscribe_scan"              type="bool"   value="false"/>
     <param name="frame_id"                    type="string" value="$(arg ns)/base_footprint"/>
     <param name="wait_for_transform_duration" type="double" value="0.2"/>
 
     <remap from="rgb/image"       to="$(arg rgb_topic)"/>
     <remap from="depth/image"     to="$(arg depth_topic)"/>
     <remap from="rgb/camera_info" to="$(arg camera_info_topic)"/>
-    <remap from="scan"            to="rplidar/scan"/>
+    <remap from="scan"            to="$(arg laser)/scan"/>
     <remap from="odom"            to="odom_combined"/>
 
     <!-- RTAB-Map's parameters -->

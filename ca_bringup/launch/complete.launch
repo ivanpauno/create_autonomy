@@ -13,12 +13,9 @@
   </include>
 
   <group ns="$(arg ns)">
-    <include file="$(find ca_slam)/launch/depthimage_to_laserscan.launch">
-      <arg name="laser" value="$(arg laser)"/>
-      <arg name="ns"    value="$(arg ns)"/>
-    </include>
-
     <!-- Localization node -->
+    <include file="$(find ca_camera)/launch/rplidar_a2.launch"/>
+
     <include file="$(find ca_localization)/launch/localize.launch">
       <arg name="ns" value="$(arg ns)"/>
     </include>
