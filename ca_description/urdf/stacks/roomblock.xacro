@@ -49,6 +49,7 @@ Block on top of the iRobot Create 2
 <xacro:property name="laser_dict" value="${load_yaml(laser_yaml)}"/>
 
 <xacro:property name="laser_origin" value="${laser_dict['roomblock'][laser]}"/>
+<xacro:include filename="$(find ca_description)/urdf/sensors/lasers/rplidar.xacro"/>
 <xacro:include filename="$(find ca_description)/urdf/sensors/lasers/${laser}.xacro"/>
 
 <!-- TODO (eborghi): ADD CAMERA CAD? REMOVE CAMERA/USE ANOTHER ONE? -->

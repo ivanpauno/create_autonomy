@@ -135,6 +135,7 @@
 <xacro:property name="laser_dict" value="${load_yaml(laser_yaml)}"/>
 
 <xacro:property name="laser_origin" value="${laser_dict['turtlebot'][laser]}"/>
+<xacro:include filename="$(find ca_description)/urdf/sensors/lasers/rplidar.xacro"/>
 <xacro:include filename="$(find ca_description)/urdf/sensors/lasers/${laser}.xacro"/>
 
 </robot>
