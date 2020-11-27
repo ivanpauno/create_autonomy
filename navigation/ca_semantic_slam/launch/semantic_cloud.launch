@@ -1,0 +1,11 @@
+<launch>
+  <arg name="ns" default="create1" doc="Namespace of the robot. By default: create1"/>
+  <arg name="laser" default="$(optenv LASER rplidar)" doc="Laser for mapping the environment"/>
+
+  <node pkg="ca_semantic_slam" type="semantic_cloud" name="semantic_cloud" output="screen">
+    <remap from="rgb/image_rect" to="$(laser)/rgb/image_rect_color"/>
+    <remap from="depth_registered/image_rect" to="$(laser)/depth_registered/image_raw"/>
+    <remap from="depth_registered/camera_info" to="$(laser)/depth_registered/camera_info"/>
+    <remap from="semantic/color_mask" to="segnet/color_mask"/>
+  </node>
+</launch>
