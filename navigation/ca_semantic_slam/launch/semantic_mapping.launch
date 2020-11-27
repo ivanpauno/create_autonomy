@@ -4,7 +4,6 @@
 
   <!-- https://github.com/yubaoliu/semantic_slam_floatlazer/blob/master/semantic_slam/launch/semantic_mapping.launch -->
 
-<!--
   <node pkg="semantic_cloud" type="semantic_cloud.py" name="semantic_cloud" output="screen">
     <param name="camera/fx" type="double" value="544.771755"/>
     <param name="camera/fy" type="double" value="546.966312"/>
@@ -20,7 +19,7 @@
     <param name="semantic_pcl/model_path" type="string"
          value="$(find semantic_cloud)/models/pspnet_50_ade20k.pth"/>
   </node>
--->
+
   <!-- Octomap -->
   <!--
   <rosparam file="$(find floatlazer_semantic_slam)/params/octomap_generator.yaml" command="load"/>

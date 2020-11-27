@@ -335,11 +335,11 @@ Visualization Manager:
                     {}
                   create1/wheel_right_link:
                     {}
-                create1_tf/battery_link:
+                create1/battery_link:
                   {}
-                create1_tf/wheel_left_link:
+                create1/wheel_left_link:
                   {}
-                create1_tf/wheel_right_link:
+                create1/wheel_right_link:
                   {}
           Update Interval: 0
           Value: true
@@ -859,7 +859,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: create1_tf/odom
+    Fixed Frame: create1/odom
     Frame Rate: 30
   Name: root
   Tools:
