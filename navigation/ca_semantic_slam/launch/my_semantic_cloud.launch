@@ -1,0 +1,11 @@
+<launch>
+  <arg name="ns" default="create1" doc="Namespace of the robot. By default: create1"/>
+  <arg name="laser" default="d435" doc="Laser for mapping the environment"/>
+
+  <node pkg="ca_semantic_slam" ns="$(arg ns)" type="semantic_cloud" name="semantic_cloud" output="screen">
+    <remap from="rgb/image_rect" to="$(arg laser)/rgb/image_rect_color"/>
+    <remap from="depth_registered/image_rect" to="$(arg laser)/depth_registered/image_raw"/>
+    <remap from="depth_registered/camera_info" to="$(arg laser)/depth_registered/camera_info"/>
+    <remap from="semantic/color_mask" to="/segnet/color_mask"/>
+  </node>
+</launch>

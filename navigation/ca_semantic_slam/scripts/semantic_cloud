@@ -3,7 +3,7 @@
 import rospy
 import cv_bridge
 import message_filters
-import sensor_msgs
+import sensor_msgs.msg
 
 import numpy as np
 
@@ -22,7 +22,7 @@ class PointCloudGenerator:
         self.height = height
         self.intrinsic_matrix = intrinsic_matrix
         self.frame_id = frame_id
-        self.setup = False
+        self._setup = False
 
     def setup(self):
         x_index = np.array([range(self.width)*self.height], dtype = '<f4')
@@ -32,44 +32,46 @@ class PointCloudGenerator:
         self.xyz = np.zeros([self.width * self.height, 3], dtype = '<f4') # real world coord
         self.color = np.zeros([self.width * self.height, 4], dtype = '<u1') #bgr0
         self.mask = np.zeros([self.width * self.height, 4], dtype = '<u1') #bgr0
+        self._setup = True
+        self.data = np.zeros([self.width * self.height, 5], dtype = '<f4') #bgr0
 
     def __eq__(self, other):
-        return self.height == other.height and self.width == other.width \
+        return isinstance(other, PointCloudGenerator) and self.height == other.height and self.width == other.width \
             and self.frame_id == other.frame_id and \
-            self.intrinsic_matrix == other.intrinsic_matrix
+            np.all(np.equal(self.intrinsic_matrix, other.intrinsic_matrix))
 
     def __ne__(self, other):
         return not (self == other)
 
     def _make_pointcloud_msg(self, stamp, data):
-        msg = sensor_msgs.PointCloud2()
+        msg = sensor_msgs.msg.PointCloud2()
         msg.header.stamp = stamp
         msg.header.frame_id = self.frame_id
         msg.height = 1
         msg.width = self.width * self.height
-        msg.fields.append(sensor_msgs.PointField(
+        msg.fields.append(sensor_msgs.msg.PointField(
             name = "x", offset = 0,
-            datatype = sensor_msgs.PointField.FLOAT32,
+            datatype = sensor_msgs.msg.PointField.FLOAT32,
             count = 1)
         )
-        msg.fields.append(sensor_msgs.PointField(
+        msg.fields.append(sensor_msgs.msg.PointField(
             name = "y", offset = 4,
-            datatype = sensor_msgs.PointField.FLOAT32,
+            datatype = sensor_msgs.msg.PointField.FLOAT32,
             count = 1)
         )
-        msg.fields.append(sensor_msgs.PointField(
+        msg.fields.append(sensor_msgs.msg.PointField(
             name = "z", offset = 8,
-            datatype = sensor_msgs.PointField.FLOAT32,
+            datatype = sensor_msgs.msg.PointField.FLOAT32,
             count = 1)
         )
-        msg.fields.append(sensor_msgs.PointField(
-            name = "bgr", offset = 16,
-            datatype = sensor_msgs.PointField.FLOAT32,
+        msg.fields.append(sensor_msgs.msg.PointField(
+            name = "bgr", offset = 12,
+            datatype = sensor_msgs.msg.PointField.FLOAT32,
             count = 1
         ))
-        msg.fields.append(sensor_msgs.PointField(
-            name = "mask", offset = 24,
-            datatype = sensor_msgs.PointField.FLOAT32,
+        msg.fields.append(sensor_msgs.msg.PointField(
+            name = "mask", offset = 16,
+            datatype = sensor_msgs.msg.PointField.FLOAT32,
             count = 1
         ))
         msg.data = data
@@ -80,22 +82,28 @@ class PointCloudGenerator:
         return msg
 
     def generate(self, mask_img, depth_img, color_img, stamp):
-        if not self.setup:
+        if not self._setup:
             self.setup()
         self.xyd[:, 0:2] = self.xy_index * depth_img.reshape(-1, 1)
-        self.xyd[:, 2] = depth_img.reshape(-1, 1)
-        self.xyz = self.xyd.dot(self.intrinsic_matrix.I.T)
-        self.data[:, 0:2] = self.xyz
+        self.xyd[:, 2:3] = depth_img.reshape(-1, 1)
+        self.xyz = self.xyd.dot(self.intrinsic_matrix.I.T) / 1000
+        print(self.xyz)
+#        self.xyz[:, 0:2] = self.xyz[:, 0:2] / depth_img.reshape(-1, 1)
+#        print(self.xyz)
+#        self.xyd[:, 0:2] = self.xy_index # * depth_img.reshape(-1, 1)
+#        self.xyd[:, 2:3] = depth_img.reshape(-1, 1)
+#        self.xyz = self.xyd.dot(self.intrinsic_matrix.I.T)
+        self.data[:, 0:3] = self.xyz
 
-        self.color[:,0] = color_img[:,:,0].reshape(-1,1)
-        self.color[:,1] = color_img[:,:,1].reshape(-1,1)
-        self.color[:,2] = color_img[:,:,2].reshape(-1,1)
-        self.data[:, 3] = self.color.view('<f4')
+        self.color[:,0:1] = color_img[:,:,0].reshape(-1,1)
+        self.color[:,1:2] = color_img[:,:,1].reshape(-1,1)
+        self.color[:,2:3] = color_img[:,:,2].reshape(-1,1)
+        self.data[:, 3:4] = self.color.view('<f4')
 
-        self.mask[:,0] = mask_img[:,:,0].reshape(-1,1)
-        self.mask[:,1] = mask_img[:,:,1].reshape(-1,1)
-        self.mask[:,2] = mask_img[:,:,2].reshape(-1,1)
-        self.data[:, 4] = self.mask.view('<f4')
+        self.mask[:,0:1] = mask_img[:,:,0].reshape(-1,1)
+        self.mask[:,1:2] = mask_img[:,:,1].reshape(-1,1)
+        self.mask[:,2:3] = mask_img[:,:,2].reshape(-1,1)
+        self.data[:, 4:5] = self.mask.view('<f4')
         return self._make_pointcloud_msg(
             stamp, data=np.getbuffer(self.data.ravel())[:]
         )
@@ -106,27 +114,28 @@ class Implementation:
     def __init__(self):
         self._bridge = cv_bridge.CvBridge()
         self._cloud_pub = rospy.Publisher(
-           'semantic/cloud', sensor_msgs.PointCloud2, queue_size=1)
+           'semantic/cloud', sensor_msgs.msg.PointCloud2, queue_size=10)
         self._mask_sub = message_filters.Subscriber(
-           'semantic/color_mask', sensor_msgs.Image,
+           'semantic/color_mask', sensor_msgs.msg.Image,
            queue_size=1, buff_size=30*480*640)
         self._depth_sub = message_filters.Subscriber(
-           'depth_registered/image_rect', sensor_msgs.Image,
+           'depth_registered/image_rect', sensor_msgs.msg.Image,
            queue_size=1, buff_size=30*480*640)
         self._color_sub = message_filters.Subscriber(
-           'rgb/image_rect', sensor_msgs.Image,
+           'rgb/image_rect', sensor_msgs.msg.Image,
            queue_size=1, buff_size=30*480*640)
         self._depth_info_sub = rospy.Subscriber(
-           'depth_registered/camera_info', sensor_msgs.CameraInfo,
+           'depth_registered/camera_info', sensor_msgs.msg.CameraInfo,
            self._camera_info_callback, queue_size=1)
         self._time_sync = message_filters.ApproximateTimeSynchronizer(
            [self._mask_sub, self._depth_sub, self._color_sub], queue_size=1, slop=0.3)
         # Take in one color image and one depth image with a limite time gap between message time stamps
         self._time_sync.registerCallback(self._mask_depth_callback)
+        self._cloud_generator = None
 
     def _camera_info_callback(self, info):
        cloud_generator = PointCloudGenerator(
-          intrinsic=np.array(info.K).reshape(3, 3),
+          intrinsic_matrix=np.matrix(np.array(info.K).reshape(3, 3)),
           height=info.height, width=info.width,
           frame_id=info.header.frame_id
        )
@@ -138,7 +147,7 @@ class Implementation:
            return
         try:
            mask_img = self._bridge.imgmsg_to_cv2(mask_imgmsg, "bgr8")
-           depth_img = self._bridge.imgmsg_to_cv2(depth_imgimg, "32FC1")
+           depth_img = self._bridge.imgmsg_to_cv2(depth_imgmsg, "32FC1")
            color_img = self._bridge.imgmsg_to_cv2(color_imgmsg, "bgr8")
         except cv_bridge.CvBridgeError as e:
            rospy.logerr(str(e))

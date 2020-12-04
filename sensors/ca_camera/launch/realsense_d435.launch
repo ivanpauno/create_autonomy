@@ -70,7 +70,7 @@ image_proc and depth_image_proc.
       <remap from="depth_registered/image_rect" to="$(arg depth_registered)/image_raw" />
     </node>
 
-    <node pkg="nodelet" type="nodelet" name="crop_rgb"
+    <!-- node pkg="nodelet" type="nodelet" name="crop_rgb"
           args="load image_proc/crop_decimate $(arg manager) $(arg bond)" respawn="$(arg respawn)">
       <remap from="camera/camera_info"         to="$(arg rgb)/camera_info" />
       <remap from="camera/image_raw"           to="$(arg rgb)/image_rect_color"/>
@@ -80,7 +80,7 @@ image_proc and depth_image_proc.
       <param name="y_offset" value="40"/>
       <param name="width" value="512"/>
       <param name="height" value="400"/>
-    </node>
+    </node-->
 
     <!-- Publish registered XYZRGB point cloud with software registered input -->
     <node pkg="nodelet" type="nodelet" name="points_xyzrgb_sw_registered"
